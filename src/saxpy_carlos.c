@@ -18,9 +18,11 @@
 #include <assert.h>
 #include <sys/time.h>
 #include <pthread.h>
+#include <string.h>
 
 typedef struct{
 	int limite_inferior, limite_superior;
+	double* vector_promedios;
 	//double* a, X, Y, Y_avgs;
 }Argumentos;
 
@@ -40,6 +42,7 @@ void* saxpy (void* arg){					// Argumentos: max_iters, it, i, vector Y[], vector
 	Argumentos *args = (Argumentos *)arg;
 	i = args->limite_inferior;
 	int sup = args->limite_superior;
+	double* v_p = args->vector_promedios;
 	//double* X = args->X;
 	//double* Y = args->Y;
 	//double* Y_avgs = args->Y_avgs;
@@ -108,6 +111,7 @@ int main(int argc, char* argv[]){
 	X = (double*) malloc(sizeof(double) * p);
 	Y = (double*) malloc(sizeof(double) * p);
 	Y_avgs = (double*) malloc(sizeof(double) * max_iters);
+	
 
 	int i;
 	for(i = 0; i < p; i++){
@@ -134,14 +138,20 @@ int main(int argc, char* argv[]){
 
 	printf("a= %f \n", a);	
 #endif
+	double* Y_avgs_copy;
+	Y_avgs_copy = malloc(sizeof(double) * max_iters); 			//////////////// Para copiar el vector
+	memcpy(Y_avgs_copy, Y_avgs, sizeof(double) * max_iters);		//// Copia vector
 	////////////////////////////////////////////// Definir los argumentos:
 	Argumentos args_1, args_2;
 	//Puedo mandar los vectores completos y partir en los hilos, o partirlos antes y mandarlos partidos. O variable global???? Parece mejor que sea global
 	args_1.limite_inferior = 0;
-	args_2.limite_superior = (p/2);
+	args_1.limite_superior = (p/2);
+	args_1.vector_promedios = Y_avgs;
 
-	args_1.limite_inferior = (p/2);
+	args_2.limite_inferior = (p/2);
 	args_2.limite_superior = p;
+	args_2.vector_promedios = Y_avgs_copy;
+	
 	///////////////////////////////////////////////////////	Definir los hilos:
 	pthread_t thread_1, thread_2;
 	/*
